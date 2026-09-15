@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+engora_backend/node_modules/
+
+# Build & Dist
+dist/
+engora_backend/dist/
+build/
+engora_app/build/
+*.tsbuildinfo
+
+# Flutter / Dart
+.dart_tool/
+engora_app/.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+engora_app/.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+engora_backend/.env
+engora_backend/.env.local
+engora_backend/.env.*.local
+
+# IDE / Editor / OS
+.DS_Store
+Thumbs.db
+*.iml
+engora_app/*.iml
+.idea/
+engora_app/.idea/
