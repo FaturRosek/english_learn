@@ -39,14 +39,16 @@ export class ListeningController {
   submitAnswers(
     @Param('id') id: string,
     @Body() dto: SubmitAnswersDto,
-    @Request() req: { user: { sub: string } },
+    @Request() req: { user: { id: string; sub?: string } },
   ) {
-    return this.listeningService.submitAnswers(req.user.sub, id, dto.answers);
+    const userId = req.user.id ?? req.user.sub!;
+    return this.listeningService.submitAnswers(userId, id, dto.answers);
   }
 
   @Get('history')
   @ApiOperation({ summary: 'Get listening practice history' })
-  getHistory(@Request() req: { user: { sub: string } }) {
-    return this.listeningService.getHistory(req.user.sub);
+  getHistory(@Request() req: { user: { id: string; sub?: string } }) {
+    const userId = req.user.id ?? req.user.sub!;
+    return this.listeningService.getHistory(userId);
   }
 }

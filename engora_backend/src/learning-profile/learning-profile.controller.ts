@@ -50,4 +50,10 @@ export class LearningProfileController {
   getTodaysPractice(@Request() req: { user: { id: string } }) {
     return this.service.getTodaysPractice(req.user.id);
   }
+
+  @Get('learning-path')
+  @ApiOperation({ summary: 'Get personalized learning path based on level and goal' })
+  getLearningPath(@Request() req: { user: { id: string } }) {
+    return this.service.getLearningPath(req.user.id);
+  }
 }

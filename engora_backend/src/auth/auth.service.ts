@@ -105,6 +105,20 @@ export class AuthService {
     return tokens;
   }
 
+  async refreshTokensWithToken(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync<{ sub: string; email: string }>(
+        refreshToken,
+        {
+          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        },
+      );
+      return this.refreshTokens(payload.sub, refreshToken);
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+  }
+
   async logout(userId: string) {
     await this.usersService.updateRefreshToken(userId, null);
     return { message: 'Logged out successfully' };

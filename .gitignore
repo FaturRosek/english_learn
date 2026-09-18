@@ -33,3 +33,4 @@ Thumbs.db
 engora_app/*.iml
 .idea/
 engora_app/.idea/
+.vscode/

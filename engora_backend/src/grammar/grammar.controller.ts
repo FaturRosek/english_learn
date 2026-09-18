@@ -21,8 +21,17 @@ export class GrammarController {
 
   @Get('lessons')
   @ApiOperation({ summary: 'Get grammar lessons for a level' })
-  getLessons(@Query('level') level: EnglishLevel) {
+  getLessons(@Query('level') level?: string) {
     return this.grammarService.getLessonsForLevel(level);
+  }
+
+  @Post('lessons/:id/complete')
+  @ApiOperation({ summary: 'Mark grammar lesson as completed' })
+  markComplete(
+    @Param('id') id: string,
+    @Request() req: { user: { id: string } },
+  ) {
+    return this.grammarService.markLessonComplete(id, req.user.id);
   }
 
   @Get('weaknesses')

@@ -147,4 +147,123 @@ export class LearningProfileService {
       aiSummary: profile.aiProfileSummary,
     };
   }
+
+  async getLearningPath(userId: string) {
+    const profile = await this.findByUserId(userId);
+    if (!profile) throw new NotFoundException('Profile not found');
+
+    const level = profile.currentLevel;
+    const goal = profile.learningGoal;
+    const skills = {
+      speaking: Math.round(profile.speakingProgress),
+      writing: Math.round(profile.writingProgress),
+      listening: Math.round(profile.listeningProgress),
+      vocabulary: Math.round(profile.vocabularyProgress),
+      grammar: Math.round(profile.grammarProgress),
+    };
+
+    const steps = [
+      {
+        id: 'step_1',
+        title: `Level ${level} Assessment & Foundations`,
+        subtitle: 'Core principles and initial evaluation',
+        category: 'milestone',
+        done: true,
+      },
+    ];
+
+    if (goal === LearningGoal.JOB_INTERVIEW || goal === LearningGoal.WORK) {
+      steps.push(
+        {
+          id: 'step_2',
+          title: 'Workplace & Professional Vocabulary',
+          subtitle: 'Essential business terminology and idioms',
+          category: 'vocabulary',
+          done: skills.vocabulary >= 35,
+        },
+        {
+          id: 'step_3',
+          title: 'Professional Writing & Email Correspondence',
+          subtitle: 'Clear, concise, and polite business messages',
+          category: 'writing',
+          done: skills.writing >= 45,
+        },
+        {
+          id: 'step_4',
+          title: 'Job Interview Speaking & Fluency',
+          subtitle: 'Answering common interview questions with confidence',
+          category: 'speaking',
+          done: skills.speaking >= 55,
+        },
+        {
+          id: 'step_5',
+          title: 'Full AI Mock Interview Simulation',
+          subtitle: 'Interactive real-time interview roleplay',
+          category: 'simulation',
+          done: skills.speaking >= 75 && skills.grammar >= 60,
+        },
+      );
+    } else if (goal === LearningGoal.TRAVEL) {
+      steps.push(
+        {
+          id: 'step_2',
+          title: 'Essential Travel Phrases & Customs',
+          subtitle: 'Greetings, directions, and emergencies',
+          category: 'vocabulary',
+          done: skills.vocabulary >= 30,
+        },
+        {
+          id: 'step_3',
+          title: 'Listening to Native Accents & Announcements',
+          subtitle: 'Train your ears for stations, airports, and hotels',
+          category: 'listening',
+          done: skills.listening >= 40,
+        },
+        {
+          id: 'step_4',
+          title: 'Real-Life Situation Conversations',
+          subtitle: 'Roleplay checking into hotels and ordering food',
+          category: 'speaking',
+          done: skills.speaking >= 50,
+        },
+      );
+    } else {
+      steps.push(
+        {
+          id: 'step_2',
+          title: 'Everyday Daily Conversation',
+          subtitle: 'Casual conversations, hobbies, and routines',
+          category: 'speaking',
+          done: skills.speaking >= 30,
+        },
+        {
+          id: 'step_3',
+          title: 'Core Grammar & Tense Mastery',
+          subtitle: 'Past, present, and future consistency',
+          category: 'grammar',
+          done: skills.grammar >= 40,
+        },
+        {
+          id: 'step_4',
+          title: 'Vocabulary Expansion (500+ Words)',
+          subtitle: 'Collocations, phrasal verbs, and synonyms',
+          category: 'vocabulary',
+          done: skills.vocabulary >= 50,
+        },
+        {
+          id: 'step_5',
+          title: 'Fluent & Natural Speaking Flow',
+          subtitle: 'Confidence and natural phrasing without pauses',
+          category: 'speaking',
+          done: skills.speaking >= 70,
+        },
+      );
+    }
+
+    return {
+      currentLevel: level,
+      goal,
+      steps,
+    };
+  }
 }

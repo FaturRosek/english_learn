@@ -37,7 +37,7 @@ export class UsersService {
       const hashed = await bcrypt.hash(refreshToken, 10);
       await this.userRepository.update(userId, { refreshToken: hashed });
     } else {
-      await this.userRepository.update(userId, { refreshToken: undefined });
+      await this.userRepository.update(userId, { refreshToken: null as any });
     }
   }
 
