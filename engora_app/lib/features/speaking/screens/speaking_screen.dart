@@ -45,20 +45,59 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
     });
   }
 
+  Future<void> _startSession(String situation) async {
+    final speaking = context.read<SpeakingProvider>();
+    final ok = await speaking.startSession(situation: situation);
+    if (!mounted) return;
+    if (!ok) {
+      _showMessage(speaking.error ?? 'Failed to start session.');
+    } else {
+      _scrollToBottom();
+    }
+  }
+
   Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
+
+    final speaking = context.read<SpeakingProvider>();
+    if (speaking.state == SpeakingState.processing) return;
+
     _textController.clear();
-    await context.read<SpeakingProvider>().sendTextMessage(text);
+    final ok = await speaking.sendTextMessage(text);
+    if (!mounted) return;
     _scrollToBottom();
+    if (!ok) {
+      _showMessage(speaking.error ?? 'Failed to send message.');
+    }
   }
 
   Future<void> _endSession() async {
     final speaking = context.read<SpeakingProvider>();
-    final feedback = await speaking.endSession();
-    if (feedback != null && mounted) {
-      setState(() => _showFeedback = true);
+
+    if (!speaking.hasUserMessage) {
+      _showMessage('Send at least one message to receive feedback.');
+      return;
     }
+
+    final feedback = await speaking.endSession();
+    if (!mounted) return;
+
+    if (feedback != null) {
+      setState(() => _showFeedback = true);
+    } else {
+      _showMessage(speaking.error ?? 'Failed to get feedback.');
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -82,17 +121,28 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
     if (!speaking.hasSession) {
       return _SituationPickerScreen(
         situations: _situations,
-        onStart: (situation) async {
-          await speaking.startSession(situation: situation);
-          _scrollToBottom();
-        },
+        onStart: _startSession,
       );
     }
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Speaking Practice'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Speaking Practice'),
+            if (speaking.situation != null)
+              Text(
+                speaking.situation!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: speaking.loading ? null : _endSession,
@@ -394,12 +444,11 @@ class _FeedbackScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final score = feedback['overallScore'] as int? ?? 0;
-    final corrections =
-        feedback['corrections'] as List<dynamic>? ?? [];
-    final strengths = feedback['strengths'] as List<dynamic>? ?? [];
-    final improvements = feedback['improvements'] as List<dynamic>? ?? [];
-    final summary = feedback['summary'] as String? ?? '';
+    final score = _intOf(feedback['overallScore']);
+    final corrections = _listOf(feedback['corrections']);
+    final strengths = _listOf(feedback['strengths']);
+    final improvements = _listOf(feedback['improvements']);
+    final summary = _stringOf(feedback['summary']);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Session Feedback')),
@@ -440,13 +489,13 @@ class _FeedbackScreen extends StatelessWidget {
                     children: [
                       _ScoreChip(
                           label: 'Grammar',
-                          score: feedback['grammarScore'] as int? ?? 0),
+                          score: _intOf(feedback['grammarScore'])),
                       _ScoreChip(
                           label: 'Vocab',
-                          score: feedback['vocabularyScore'] as int? ?? 0),
+                          score: _intOf(feedback['vocabularyScore'])),
                       _ScoreChip(
                           label: 'Fluency',
-                          score: feedback['fluencyScore'] as int? ?? 0),
+                          score: _intOf(feedback['fluencyScore'])),
                     ],
                   ),
                 ],
@@ -474,7 +523,8 @@ class _FeedbackScreen extends StatelessWidget {
               Text('✏️ Corrections', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 12),
               ...corrections.take(5).map((c) {
-                final correction = c as Map<String, dynamic>;
+                final correction = Map<String, dynamic>.from(c as Map);
+                final explanation = _stringOf(correction['explanation']);
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(14),
@@ -517,10 +567,10 @@ class _FeedbackScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      if ((correction['explanation'] as String?)?.isNotEmpty == true) ...[
+                      if (explanation.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(
-                          correction['explanation'],
+                          explanation,
                           style: const TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondary,
@@ -591,6 +641,20 @@ class _FeedbackScreen extends StatelessWidget {
     if (score >= 80) return AppColors.success;
     if (score >= 60) return AppColors.primary;
     return AppColors.warning;
+  }
+
+  int _intOf(dynamic value) {
+    if (value is num) return value.round();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  List<dynamic> _listOf(dynamic value) => value is List ? value : [];
+
+  String _stringOf(dynamic value) {
+    if (value is String) return value;
+    if (value != null) return value.toString();
+    return '';
   }
 }
 
