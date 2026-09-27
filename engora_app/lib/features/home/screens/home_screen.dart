@@ -71,7 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _BottomNav(),
     );
   }
 }
@@ -267,7 +266,7 @@ class _SkillProgress extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               GestureDetector(
-                onTap: () => context.push('/progress'),
+                onTap: () => context.go('/progress'),
                 child: const Text(
                   'See all',
                   style: TextStyle(
@@ -421,7 +420,7 @@ class _QuickPractice extends StatelessWidget {
             itemBuilder: (_, i) {
               final opt = _options[i];
               return GestureDetector(
-                onTap: () => context.push(opt['route'] as String),
+                onTap: () => _open(context, opt['route'] as String),
                 child: Container(
                   decoration: BoxDecoration(
                     color: (opt['color'] as Color).withOpacity(0.08),
@@ -456,55 +455,16 @@ class _QuickPractice extends StatelessWidget {
       ),
     );
   }
-}
 
-class _BottomNav extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
-      ),
-      child: NavigationBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        selectedIndex: _getIndex(location),
-        onDestinationSelected: (i) {
-          final routes = ['/home', '/progress', '/ai-tutor', '/vocabulary'];
-          context.go(routes[i]);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart),
-            label: 'Progress',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.smart_toy_outlined),
-            selectedIcon: Icon(Icons.smart_toy),
-            label: 'AI Tutor',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Vocabulary',
-          ),
-        ],
-      ),
-    );
-  }
-
-  int _getIndex(String location) {
-    if (location.startsWith('/progress')) return 1;
-    if (location.startsWith('/ai-tutor')) return 2;
-    if (location.startsWith('/vocabulary')) return 3;
-    return 0;
+  /// Routes that are themselves bottom-nav destinations are switched to
+  /// (keeping the nav bar visible); the standalone menus are pushed so the
+  /// AppBar gets a back button.
+  void _open(BuildContext context, String route) {
+    const tabRoutes = {'/home', '/progress', '/ai-tutor', '/vocabulary'};
+    if (tabRoutes.contains(route)) {
+      context.go(route);
+    } else {
+      context.push(route);
+    }
   }
 }

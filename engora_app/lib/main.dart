@@ -25,6 +25,7 @@ import 'features/grammar/screens/grammar_screen.dart';
 import 'features/ai_tutor/screens/ai_tutor_screen.dart';
 import 'features/progress/screens/progress_screen.dart';
 import 'features/listening/screens/listening_screen.dart';
+import 'core/widgets/scaffold_with_nav_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,13 +95,50 @@ class _AppRouterState extends State<_AppRouter> {
         GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
         GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
         GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
-        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+
+        // Tab destinations — displayed inside ScaffoldWithNavBar so the bottom
+        // nav is shared and stays put when switching between them.
+        StatefulShellRoute.indexedStack(
+          builder: (_, __, navigationShell) =>
+              ScaffoldWithNavBar(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/progress',
+                  builder: (_, __) => const ProgressScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/ai-tutor',
+                  builder: (_, __) => const AiTutorScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/vocabulary',
+                  builder: (_, __) => const VocabularyScreen(),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        // Detail menus — pushed over the whole shell, so the AppBar gets a
+        // back button that returns to whichever tab the user came from.
         GoRoute(path: '/speaking', builder: (_, __) => const SpeakingScreen()),
         GoRoute(path: '/writing', builder: (_, __) => const WritingScreen()),
-        GoRoute(path: '/vocabulary', builder: (_, __) => const VocabularyScreen()),
         GoRoute(path: '/grammar', builder: (_, __) => const GrammarScreen()),
-        GoRoute(path: '/ai-tutor', builder: (_, __) => const AiTutorScreen()),
-        GoRoute(path: '/progress', builder: (_, __) => const ProgressScreen()),
         GoRoute(path: '/listening', builder: (_, __) => const ListeningScreen()),
       ],
     );
