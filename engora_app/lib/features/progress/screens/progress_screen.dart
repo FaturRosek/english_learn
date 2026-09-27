@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/learning_profile_model.dart';
@@ -26,6 +27,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('My Progress'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/home'),
+        ),
         backgroundColor: AppColors.surface,
         actions: [
           Consumer<ProgressProvider>(

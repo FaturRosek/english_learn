@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/vocabulary_provider.dart';
@@ -35,6 +36,10 @@ class _VocabularyScreenState extends State<VocabularyScreen>
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Vocabulary'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/home'),
+        ),
         backgroundColor: AppColors.surface,
         bottom: TabBar(
           controller: _tabController,
